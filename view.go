@@ -5,6 +5,11 @@ import (
     "strings"
 )
 
+var spacer = " "
+var quitMsg = "press q to quit"
+var escMsg = "press esc to go back"
+var enterMsg = "press enter to continue"
+
 func buildView(m model) string {
 
 	s := strings.Builder{}
@@ -26,9 +31,8 @@ func buildView(m model) string {
 	    s.WriteString(fmt.Sprintf("\n Username %s", m.textInputs[username].View()))
 	    s.WriteString(fmt.Sprintf("\n Password %s", m.textInputs[password].View()))
         s.WriteString("\n\n")
-        s.WriteString(" press enter to continue\n")
-        s.WriteString(" press esc to go back\n")
-	    s.WriteString(" press q to quit\n")
+        s.WriteString(fmt.Sprintf("%s%s\n", spacer, enterMsg))
+        s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
 
     default:
 
@@ -43,9 +47,14 @@ func buildView(m model) string {
 	        s.WriteString("\n")
 
         }
-        s.WriteString("\n\n")
-	    s.WriteString(" press esc to go back\n")
-	    s.WriteString(" press q to quit\n")
+		//Allows feedback msg
+		if len(m.feedback) > 0 {
+			s.WriteString("\n" + "*" + m.feedback + "\n\n")
+		} else {
+			s.WriteString("\n\n")
+		}
+        s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
+	    s.WriteString(fmt.Sprintf("%s%s\n", spacer, quitMsg))
     }
     
     return s.String()

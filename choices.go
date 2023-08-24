@@ -1,9 +1,7 @@
 package main
 
 import (
-    //"fmt"
     "slices"
-    //"log"
     "github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -11,6 +9,7 @@ import (
 
 type model struct {
     err        error
+	feedback   string
 	cursor     int
 	choice     string
     menu       []string
@@ -46,9 +45,23 @@ var coTitle = " CHECK OPTIONS menu "
 var coCurrent = "check-options"
 var coPrevious = "Add db"
 
+// Check save menu components
+var csSuccessFb = "Credentials succesfully saved."
+var csEnvExistsFb = "Environment already exists in configs."
+
 type (
 	errMsg error
 )
+
+func exceptions(m model) bool {
+
+	if m.current == "add-db" {
+		return true
+	} else {
+		return false
+	}
+
+}
 
 func newModel(m model) model {
 
@@ -77,7 +90,7 @@ func newModel(m model) model {
         
         m = model{cursor: 0, menu: adbItems, title: adbTitle, current: adbCurrent,
         previous: adbPrevious, textInputs: inputs}
-    
+
     case "Check Options":
 
         userCreds := credentials{env: m.textInputs[env].Value(),
@@ -92,6 +105,12 @@ func newModel(m model) model {
 
     case "Save":
 
+		// Check if environment already exists, else, create new environment.
+		envExists := checkEnvExists(m.creds.env)
+		if envExists {
+			m.feedback = csEnvExistsFb
+		}
+
         // Check godump.toml exists. If does not exist, it creates one. If
         // similar credentials exists, it feeds an error to m.err.
         err := configsExist()
@@ -101,10 +120,11 @@ func newModel(m model) model {
         err = saveCredentials(m)
         if err != nil {
             m.err = err 
-        } else {
-            //m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
-            //previous: cmPrevious}
         }
+
+        m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
+		previous: cmPrevious, feedback: csSuccessFb}
+
     }
 
     return m
@@ -114,7 +134,7 @@ func newModel(m model) model {
 func goBack(m model) model {
     if m.current == "main" {
         return m
-    } else {
+	} else {
         m.goback = true
         m = newModel(m)
         return m

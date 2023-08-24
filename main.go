@@ -25,7 +25,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             return goBack(m), nil
 
 		case "ctrl+c", "q":
-			return m, tea.Quit
+
+			excep := exceptions(m)
+
+			if excep {
+				return m, nil
+			} else {
+				return m, tea.Quit
+			}
+
 
 		case "enter":
             m = newModel(m)
@@ -60,7 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
 
         case "ctrl+p":
-            fmt.Println(saveCredentials(m))
+			fmt.Println(m.current, m.previous)
 	    }
 
 	}

@@ -65,6 +65,58 @@ func adbTextInputs() []textinput.Model {
         return inputs
 }
 
+func edbTextInputs(ic *inputConf) []textinput.Model {
+
+	    var inputs []textinput.Model = make([]textinput.Model, 6)
+
+		inputs[env] = textinput.New()
+        inputs[env].Focus()
+        inputs[env].CharLimit = 156
+        inputs[env].Width = 20
+        inputs[env].Prompt = ""
+		inputs[env].SetValue(ic.env)
+
+        inputs[database] = textinput.New()
+        inputs[database].Placeholder = "postgres"
+        inputs[database].CharLimit = 156
+        inputs[database].Width = 20
+        inputs[database].Prompt = ""
+		inputs[database].SetValue(ic.database)
+        //inputs[database].Validate = dbValidator
+    
+        inputs[hostname] = textinput.New()
+        inputs[hostname].Placeholder = "localhost"
+        inputs[hostname].CharLimit = 156
+        inputs[hostname].Width = 20
+        inputs[hostname].Prompt = ""
+		inputs[hostname].SetValue(ic.hostname)
+        //inputs[hostname].Validate = hostValidator
+    
+        inputs[port] = textinput.New()
+        inputs[port].Placeholder = "5432"
+        inputs[port].CharLimit = 156
+        inputs[port].Width = 20
+        inputs[port].Prompt = ""
+		inputs[port].SetValue(ic.port)
+    
+        inputs[username] = textinput.New()
+        inputs[username].Placeholder = "postgres"
+        inputs[username].CharLimit = 156
+        inputs[username].Width = 20
+        inputs[username].Prompt = ""
+		inputs[username].SetValue(ic.user)
+    
+        inputs[password] = textinput.New()
+        inputs[password].Placeholder = "mysecretpassword"
+        inputs[password].CharLimit = 156
+        inputs[password].Width = 20
+        inputs[password].Prompt = ""
+		inputs[password].SetValue(ic.password)
+
+		return inputs
+
+}
+
 func dbValidator(s string) error {
     
     if len(s) == 0 {

@@ -24,7 +24,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         case "esc":
             return goBack(m), nil
 
-		case "ctrl+c", "q":
+		case "ctrl+c":
+			return m, tea.Quit
+
+		case "q":
 
 			excep := exceptions(m)
 
@@ -42,7 +45,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down":
 			m.cursor++
             switch m.current {
-                case "add-db":
+                case "add-db", "edit-single-db":
                     if m.cursor >= len(m.textInputs) {
                         m.cursor = 0
                     }
@@ -56,7 +59,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			m.cursor--
             switch m.current {
-            case "add-db":
+            case "add-db", "edit-single-db":
                 if m.cursor < 0 {
                     m.cursor = len(m.textInputs) - 1
                 }
@@ -67,7 +70,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			    }
             }
 
-        case "ctrl+p":
+        case "ctrl+t":
 			fmt.Println(m.current, m.previous)
 	    }
 

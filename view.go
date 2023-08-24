@@ -16,7 +16,7 @@ func buildView(m model) string {
     s.WriteString(fmt.Sprintf("\n%s\n\n", m.title))
 
     switch m.current {
-    case "add-db":
+    case "add-db", "edit-single-db":
 
         //if m.textInputs[env].Err != nil {
 	    //    s.WriteString(fmt.Sprintf(" Environment %s  -> %s", m.textInputs[env].View(), m.textInputs[env].Err))

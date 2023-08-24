@@ -8,7 +8,7 @@ import (
     "github.com/BurntSushi/toml"
 )
 
-type credentials struct {
+type inputConf struct {
     env      string `toml:"env"`
 	database string `toml:"database"`
     hostname string `toml:"hostname"`
@@ -16,9 +16,14 @@ type credentials struct {
 	user     string `toml:"user"`
 	password string `toml:"password"`
 }
-//type Config struct {
-//	Postgres Postgres `toml:"postgres" comment:"Postgres configuration"`
-//}
+
+type tomlConf struct {
+	Database string `toml:"database"`
+	Hostname string `toml:"hostname"`
+	Password string `toml:"password"`
+	Port     string `toml:"port"`
+	User     string `toml:"user"`
+}
 
 var confPath string = fmt.Sprintf("%s/.config/godump.toml", os.Getenv("HOME"))
 
@@ -33,15 +38,7 @@ func configsExist() error {
 
 func checkEnvExists(e string) bool {
 
-	type DatabaseConfig struct {
-		Database string `toml:"database"`
-		Hostname string `toml:"hostname"`
-		Password string `toml:"password"`
-		Port     string `toml:"port"`
-		User     string `toml:"user"`
-	}
-
-	var data map[string]DatabaseConfig
+	var data map[string]tomlConf
 
 	_, err := toml.DecodeFile(confPath, &data)
 	if err != nil {
@@ -58,7 +55,37 @@ func checkEnvExists(e string) bool {
 
 }
 
+func loadConfigs() []*inputConf {
+
+	var data map[string]tomlConf
+	var inputConfs []*inputConf
+
+
+	_, err := toml.DecodeFile(confPath, &data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for env, creds := range data{
+		conf := new(inputConf)
+		conf.env = env
+		conf.database = creds.Database
+		conf.hostname = creds.Hostname
+		conf.port = creds.Port
+		conf.user = creds.User
+		conf.password = creds.Password
+
+		inputConfs = append(inputConfs, conf)
+	}
+
+	return inputConfs
+
+}
+
 func editEnv() {
+
+	//confs := loadConfigs()
+
 	//for key, values := range data {
 	//	if key == e {
 	//		fmt.Println(values)
@@ -107,8 +134,7 @@ func saveCredentials(m model) error {
         panic(err)
     }
 
-    //fmt.Println(buf.String())
-
+	// SORT OUT ERROR
     return fmt.Errorf("")
 
 }

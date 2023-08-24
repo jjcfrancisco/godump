@@ -17,8 +17,10 @@ type model struct {
     current    string
     previous   string
     goback     bool
+	trigger    bool
+	env		   string
     textInputs []textinput.Model
-    creds      credentials
+    creds      inputConf
 }
 
 // Main menu components
@@ -39,6 +41,19 @@ var adbCurrent = "add-db"
 var adbPrevious = "Configs"
 var adbFocused = 0
 
+// db to edit menu components
+var db2eTitle = " DB TO EDIT menu "
+var db2eCurrent = "db-to-edit"
+var db2ePrevious = "Configs"
+var db2eFocused = 0
+
+// Edit single db menu components
+var esdbItems = []string{}
+var esdbTitle = " EDIT db menu "
+var esdbCurrent = "edit-single-db"
+var esdbPrevious = "Edit db"
+var esdbFocused = 0
+
 // Check options menu components
 var coItems = []string{"Save", "Cancel", "Test connection"}
 var coTitle = " CHECK OPTIONS menu "
@@ -55,7 +70,7 @@ type (
 
 func exceptions(m model) bool {
 
-	if m.current == "add-db" {
+	if m.current == "add-db" || m.current == "edit-single-db" {
 		return true
 	} else {
 		return false
@@ -67,11 +82,14 @@ func newModel(m model) model {
 
     var choice string
 
-    if (m.goback) {
+    //if (m.goback) {
+    if m.goback {
         choice = m.previous 
-    } else if (m.current == "add-db") {
+    } else if m.current == "add-db" {
         choice = "Check Options"
-    } else {
+    } else if m.current == "db-to-edit" { 
+		choice = "Edit single db"
+	} else {
         choice = m.menu[m.cursor]
     }
 
@@ -86,22 +104,62 @@ func newModel(m model) model {
     
     case "Add db":
 
-        inputs := adbTextInputs()
+		var inputs []textinput.Model
+
+		if !m.trigger {
+			inputs = adbTextInputs()
+		} else {
+			inputs = m.textInputs
+		}
+
         
         m = model{cursor: 0, menu: adbItems, title: adbTitle, current: adbCurrent,
         previous: adbPrevious, textInputs: inputs}
 
+	case "Edit db":
+
+		var db2eItems []string
+		confs := loadConfigs()
+
+		for _, conf := range confs {
+			db2eItems = append(db2eItems, conf.env)	
+		}
+
+		m = model{cursor: 0, menu: db2eItems, title: db2eTitle, current: db2eCurrent,
+		previous: db2ePrevious}
+
+	case "Edit single db":
+
+		ic := &inputConf{}
+		confs := loadConfigs()
+		for _, conf := range confs {
+			env := m.menu[m.cursor]
+			if env == conf.env {
+				ic.env = conf.env
+				ic.database = conf.database
+				ic.hostname = conf.hostname
+				ic.port = conf.port
+				ic.user = conf.user
+				ic.password = conf.password
+			}
+		}
+
+		inputs := edbTextInputs(ic)
+
+		m = model{cursor: 0, menu: esdbItems, title: esdbTitle, current: esdbCurrent,
+		previous: esdbPrevious, textInputs: inputs}
+
     case "Check Options":
 
-        userCreds := credentials{env: m.textInputs[env].Value(),
-                                 database: m.textInputs[database].Value(),
-                                 hostname: m.textInputs[hostname].Value(),
-                                 port: m.textInputs[port].Value(),
-                                 user: m.textInputs[username].Value(),
-                                 password: m.textInputs[password].Value()}
+        userCreds := inputConf{env: m.textInputs[env].Value(),
+                               database: m.textInputs[database].Value(),
+                               hostname: m.textInputs[hostname].Value(),
+                               port: m.textInputs[port].Value(),
+                               user: m.textInputs[username].Value(),
+                               password: m.textInputs[password].Value()}
 
         m = model{cursor: 0, menu: coItems, title: coTitle, current: coCurrent,
-        previous: coPrevious, creds: userCreds}
+		previous: coPrevious, creds: userCreds, textInputs: m.textInputs, trigger: true}
 
     case "Save":
 
@@ -109,22 +167,21 @@ func newModel(m model) model {
 		envExists := checkEnvExists(m.creds.env)
 		if envExists {
 			m.feedback = csEnvExistsFb
+		} else {
+			// Check godump.toml exists. If does not exist, it creates one. If
+        	// similar credentials exists, it feeds an error to m.err.
+        	err := configsExist()
+        	if err != nil {
+        	    createEmtpyConfigs()
+        	}
+        	err = saveCredentials(m)
+        	if err != nil {
+        	    m.err = err 
+        	}
+
+        	m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
+			previous: cmPrevious, feedback: csSuccessFb}
 		}
-
-        // Check godump.toml exists. If does not exist, it creates one. If
-        // similar credentials exists, it feeds an error to m.err.
-        err := configsExist()
-        if err != nil {
-            createEmtpyConfigs()
-        }
-        err = saveCredentials(m)
-        if err != nil {
-            m.err = err 
-        }
-
-        m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
-		previous: cmPrevious, feedback: csSuccessFb}
-
     }
 
     return m
@@ -143,7 +200,7 @@ func goBack(m model) model {
 
 func nextTextarea(m model, msg tea.Msg) model {
 
-    textinputMenus := []string{"add-db"}
+    textinputMenus := []string{"add-db", "edit-single-db"}
 
     if slices.Contains(textinputMenus, m.current) {
         for i := range m.textInputs {

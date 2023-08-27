@@ -82,15 +82,94 @@ func loadConfigs() []*inputConf {
 
 }
 
-func editEnv() {
+func editEnv(ic *inputConf) {
 
-	//confs := loadConfigs()
+	confs := loadConfigs()
 
-	//for key, values := range data {
-	//	if key == e {
-	//		fmt.Println(values)
-	//	}
-	//}
+	for _, conf := range confs {
+		if ic.env == conf.env {
+			conf.env = ic.env
+			conf.database = ic.database
+			conf.hostname = ic.hostname
+			conf.port = ic.port
+			conf.user = ic.user
+			conf.password = ic.password
+		}
+	}
+
+	var buf = new(bytes.Buffer)
+
+	for _, conf := range confs {
+		err := toml.NewEncoder(buf).Encode(map[string]interface{}{
+			conf.env: map[string]string{
+				"database": conf.database,
+				"hostname": conf.hostname,
+    	        "port": conf.port,
+    	        "user": conf.user,
+    	        "password": conf.password,
+			},
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+    file, err := os.OpenFile(confPath, os.O_WRONLY, 0644)
+    if err != nil {
+       panic(err)
+    }
+    defer file.Close()
+
+    // Write the TOML data to the file.
+    _, err = file.Write(buf.Bytes())
+    if err != nil {
+        panic(err)
+    }
+
+}
+
+func removeEnv(env string) {
+
+	confs := loadConfigs()
+	var new_confs []*inputConf
+
+	for _, conf := range confs {
+		if env == conf.env {
+			continue
+		} else {
+			new_confs = append(new_confs, conf)
+		}
+	}
+
+	var buf = new(bytes.Buffer)
+
+	for _, new_conf := range new_confs {
+		err := toml.NewEncoder(buf).Encode(map[string]interface{}{
+			new_conf.env: map[string]string{
+			"database": new_conf.database,
+			"hostname": new_conf.hostname,
+    	    "port": new_conf.port,
+    	    "user": new_conf.user,
+    	    "password": new_conf.password,
+			},
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+    file, err := os.OpenFile(confPath, os.O_WRONLY|os.O_TRUNC, 0644)
+    if err != nil {
+       panic(err)
+    }
+    defer file.Close()
+
+    // Write the TOML data to the file.
+    _, err = file.Write(buf.Bytes())
+    if err != nil {
+        panic(err)
+    }
+
 }
 
 func createEmtpyConfigs() {

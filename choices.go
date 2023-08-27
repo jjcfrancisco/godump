@@ -47,6 +47,12 @@ var db2eCurrent = "db-to-edit"
 var db2ePrevious = "Configs"
 var db2eFocused = 0
 
+// db to remove menu components
+var db2rTitle = " DB TO REMOVE menu "
+var db2rCurrent = "db-to-remove"
+var db2rPrevious = "Configs"
+var db2rFocused = 0
+
 // Edit single db menu components
 var esdbItems = []string{}
 var esdbTitle = " EDIT db menu "
@@ -58,11 +64,11 @@ var esdbFocused = 0
 var coItems = []string{"Save", "Cancel", "Test connection"}
 var coTitle = " CHECK OPTIONS menu "
 var coCurrent = "check-options"
-var coPrevious = "Add db"
 
 // Check save menu components
-var csSuccessFb = "Credentials succesfully saved."
-var csEnvExistsFb = "Environment already exists in configs."
+var savedFb = "Credentials succesfully saved."
+var existsFb = "Environment already exists in configs."
+var deletedFb = "Credentials successfully deleted."
 
 type (
 	errMsg error
@@ -81,14 +87,21 @@ func exceptions(m model) bool {
 func newModel(m model) model {
 
     var choice string
+	var previous string
 
     //if (m.goback) {
     if m.goback {
         choice = m.previous 
     } else if m.current == "add-db" {
         choice = "Check Options"
-    } else if m.current == "db-to-edit" { 
+		previous = "Add db"
+    } else if m.current == "edit-single-db" {
+		choice = "Check Options"
+		previous = "Edit single db"
+	} else if m.current == "db-to-edit" { 
 		choice = "Edit single db"
+	} else if m.current == "db-to-remove" {
+		choice = "Remove single db"
 	} else {
         choice = m.menu[m.cursor]
     }
@@ -128,7 +141,28 @@ func newModel(m model) model {
 		m = model{cursor: 0, menu: db2eItems, title: db2eTitle, current: db2eCurrent,
 		previous: db2ePrevious}
 
+	case "Remove db":
+
+		var db2rItems []string
+		confs := loadConfigs()
+
+		for _, conf := range confs {
+			db2rItems = append(db2rItems, conf.env)	
+		}
+
+		m = model{cursor: 0, menu: db2rItems, title: db2rTitle, current: db2rCurrent,
+		previous: db2rPrevious}
+
+	case "Remove single db":
+		env := m.menu[m.cursor]
+		removeEnv(env)
+
+        m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
+		previous: cmPrevious, feedback: deletedFb}
+
 	case "Edit single db":
+
+		var inputs []textinput.Model
 
 		ic := &inputConf{}
 		confs := loadConfigs()
@@ -144,7 +178,11 @@ func newModel(m model) model {
 			}
 		}
 
-		inputs := edbTextInputs(ic)
+		if !m.trigger {
+			inputs = edbTextInputs(ic)
+		} else {
+			inputs = m.textInputs
+		}
 
 		m = model{cursor: 0, menu: esdbItems, title: esdbTitle, current: esdbCurrent,
 		previous: esdbPrevious, textInputs: inputs}
@@ -159,28 +197,33 @@ func newModel(m model) model {
                                password: m.textInputs[password].Value()}
 
         m = model{cursor: 0, menu: coItems, title: coTitle, current: coCurrent,
-		previous: coPrevious, creds: userCreds, textInputs: m.textInputs, trigger: true}
+		previous: previous, creds: userCreds, textInputs: m.textInputs, trigger: true}
 
     case "Save":
 
-		// Check if environment already exists, else, create new environment.
-		envExists := checkEnvExists(m.creds.env)
-		if envExists {
-			m.feedback = csEnvExistsFb
-		} else {
-			// Check godump.toml exists. If does not exist, it creates one. If
-        	// similar credentials exists, it feeds an error to m.err.
-        	err := configsExist()
-        	if err != nil {
-        	    createEmtpyConfigs()
-        	}
-        	err = saveCredentials(m)
-        	if err != nil {
-        	    m.err = err 
-        	}
+		if m.previous == "Add db" {
+			// Check if environment already exists, else, create new environment.
+			envExists := checkEnvExists(m.creds.env)
+			if envExists {
+				m.feedback = existsFb
+			} else {
+				// Check godump.toml exists. If does not exist, it creates one. If
+        		// similar credentials exists, it feeds an error to m.err.
+        		err := configsExist()
+        		if err != nil {
+        		    createEmtpyConfigs()
+        		}
+        		err = saveCredentials(m)
+        		if err != nil {
+        		    m.err = err 
+        		}
 
-        	m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
-			previous: cmPrevious, feedback: csSuccessFb}
+        		m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
+				previous: cmPrevious, feedback: savedFb}
+			}
+		} else if m.previous == "Edit single db" {
+			editEnv(&m.creds)
+			m.feedback = savedFb 
 		}
     }
 

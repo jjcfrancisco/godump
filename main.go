@@ -71,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
 
         case "ctrl+t":
-			fmt.Println(m.current, m.previous)
+			fmt.Println(m.cursor)
 	    }
 
 	}

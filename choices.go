@@ -69,6 +69,8 @@ var coCurrent = "check-options"
 var savedFb = "Credentials succesfully saved."
 var existsFb = "Environment already exists in configs."
 var deletedFb = "Credentials successfully deleted."
+var pingSuccessFb = "Connection established ✓"
+var pingFailFb = "Connection failed ✗"
 
 type (
 	errMsg error
@@ -231,7 +233,12 @@ func newModel(m model) model {
 		previous: cmPrevious}
 
 	case "Test connection":
-
+        _, err := NewConn(&m.creds) 
+        if err != nil {
+            m.feedback = pingFailFb
+        } else {
+            m.feedback = pingSuccessFb
+        }
 
     }
 

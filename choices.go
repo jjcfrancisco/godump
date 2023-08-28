@@ -225,6 +225,14 @@ func newModel(m model) model {
 			editEnv(&m.creds)
 			m.feedback = savedFb 
 		}
+	case "Cancel":
+
+		m = model{cursor: 0, menu: cmItems, title: cmTitle, current: cmCurrent,
+		previous: cmPrevious}
+
+	case "Test connection":
+
+
     }
 
     return m

@@ -217,3 +217,18 @@ func saveCredentials(m model) error {
     return fmt.Errorf("")
 
 }
+
+func createDir(d string) error {
+
+	_, err := os.Stat(d)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.Mkdir(d, 0755)
+			if err != nil {
+				return err
+			}
+		}
+    } 
+
+    return nil
+}

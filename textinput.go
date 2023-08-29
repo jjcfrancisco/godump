@@ -117,6 +117,19 @@ func edbTextInputs(ic *inputConf) []textinput.Model {
 
 }
 
+func inputSearch() textinput.Model {
+
+	ti := textinput.New()
+	ti.Placeholder = "my_file.dump"
+	ti.Focus()
+	ti.CharLimit = 156
+	ti.Width = 20
+    //ti.Prompt = ""
+
+    return ti
+
+}
+
 func dbValidator(s string) error {
     
     if len(s) == 0 {

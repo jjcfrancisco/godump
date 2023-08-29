@@ -34,6 +34,17 @@ func buildView(m model) string {
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, enterMsg))
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
 
+    case "type-filename":
+
+        s.WriteString(" Name for the file:")
+	    s.WriteString("\n")
+        s.WriteString(fmt.Sprintf("\n %s", m.search.View()))
+        s.WriteString("\n\n\n")
+        s.WriteString(" *Default dumps directory is ~/Dumps ")
+        s.WriteString("\n\n")
+        s.WriteString(fmt.Sprintf("%s%s\n", spacer, enterMsg))
+        s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
+
     default:
 
         for i, v := range m.menu {

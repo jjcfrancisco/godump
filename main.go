@@ -16,6 +16,7 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	
+    var cmd tea.Cmd
     var cmds []tea.Cmd = make([]tea.Cmd, len(m.textInputs))
 
     switch msg := msg.(type) {
@@ -71,7 +72,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
 
         case "ctrl+t":
-			fmt.Println(m.cursor)
+			fmt.Println(m.current, m.previous)
 	    }
 
 	}
@@ -79,6 +80,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	for i := range m.textInputs {
 		m.textInputs[i], cmds[i] = m.textInputs[i].Update(msg)
 	}
+
+    m.search, cmd = m.search.Update(msg)
+    cmds = append(cmds, cmd)
 
     return m, tea.Batch(cmds...)
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-    "log"
     "slices"
     "github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -174,7 +173,7 @@ func newModel(m model) model {
         m.creds = creds
         err := dump("all", m)
         if err != nil {
-            log.Fatal(err)
+            m.feedback = "Error connecting to the database."
         }
 
     case "Restore":

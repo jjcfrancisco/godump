@@ -30,7 +30,7 @@ func buildView(m model) string {
 	    s.WriteString(fmt.Sprintf("\n Port %s", m.textInputs[port].View()))
 	    s.WriteString(fmt.Sprintf("\n Username %s", m.textInputs[username].View()))
 	    s.WriteString(fmt.Sprintf("\n Password %s", m.textInputs[password].View()))
-        s.WriteString("\n\n")
+        s.WriteString("\n\n\n\n")
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, enterMsg))
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
 
@@ -39,9 +39,11 @@ func buildView(m model) string {
         s.WriteString(" Name for the file:")
 	    s.WriteString("\n")
         s.WriteString(fmt.Sprintf("\n %s", m.search.View()))
-        s.WriteString("\n\n\n")
-        s.WriteString(" *Default dumps directory is ~/Dumps ")
-        s.WriteString("\n\n")
+		if len(m.feedback) > 0 {
+			s.WriteString("\n\n" + "*" + m.feedback + "\n\n")
+		} else {
+			s.WriteString("\n\n\n\n")
+		}
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, enterMsg))
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
 
@@ -55,14 +57,14 @@ func buildView(m model) string {
 	        	s.WriteString("   ")
 	        }
 	        s.WriteString(v)
-	        s.WriteString("\n")
+			s.WriteString("\n")
 
         }
 		//Allows feedback msg
 		if len(m.feedback) > 0 {
 			s.WriteString("\n" + "*" + m.feedback + "\n\n")
 		} else {
-			s.WriteString("\n\n")
+			s.WriteString("\n\n\n\n")
 		}
         s.WriteString(fmt.Sprintf("%s%s\n", spacer, escMsg))
 	    s.WriteString(fmt.Sprintf("%s%s\n", spacer, quitMsg))

@@ -48,10 +48,19 @@ func dump(s string, m model) error {
                                                     m.creds.hostname,
                                                     m.creds.port,
                                                     m.creds.database) 
-    cmd := exec.Command("pg_dump", uri, "-Fc", "-f", dumpFile)
-    output, err := cmd.CombinedOutput()
+
+	db, err := sql.Open("postgres", uri)
 	if err != nil {
-        fmt.Println(output)
+		log.Fatal("Error when opening postgres connection.")
+	}
+
+	if err := db.Ping(); err != nil {
+		return err
+	}
+
+    cmd := exec.Command("pg_dump", uri, "-Fc", "-f", dumpFile)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
 		log.Fatal(err)
 	}
 
